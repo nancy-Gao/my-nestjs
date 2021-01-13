@@ -35,6 +35,15 @@
     1、全局注册：
     在main.ts中导入需要的中间件模块如：XMLMiddleware
     然后使用 app.use(new XMLMiddleware().use)即可
+    但是不参数依赖注入，如果需要依赖注入的话需要在app.module入口注册
+    
+```javascript
+configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes({ path: 'cats', method: RequestMethod.GET });
+  }
+  ```
     2、模块注册：
     模块实现NestModule并获得configure方法获得中间件消费句柄
     
@@ -55,7 +64,7 @@
 
     1.全局注册
     在main.ts中导入需要的模块如：Guard
-    然后使用 app.use(new Guard())即可
+    然后使用 app.useGuard(new Guard())即可
     但是这种方式的注入，就依赖关系注入而言，从任何模块外部注册的全局防护无法注入依赖关系，因为这是在上下文之外完成的，所以可以直接在入口module里面注入provider
 
 ```javascript
@@ -94,6 +103,36 @@ export class AppModule {}
     第一个部分在管道和自定义逻辑(next.handle()方法)之前。
     第二个部分在管道和自定义逻辑(next.handle()方法)之后。
 
+注册方式：
+
+    1.全局注册
+        在main.ts中导入需要的模块如：LoggingInterceptor
+        然后使用 app.useGlobalInterceptors(new LoggingInterceptor())即可
+        但是这种方式的注入，就依赖关系注入而言，从任何模块外部注册的全局防护无法注入依赖关系，因为这是在上下文之外完成的，所以可以直接在入口module里面注入provider
+
+```javascript
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+
+@Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+```
+    2.模块注册
+     在模块或是@method加@UseInterceptors
+
+```javascript
+
+@UseInterceptors(new LoggingInterceptor())
+export class CatsController {}
+```
+
 注意：
 
     同一路由注册多个拦截器时候，优先执行模块中绑定的拦截器，然后其拦截器转换的内容将作为全局拦截器的内容，即包裹两次返回内容：
@@ -121,6 +160,21 @@ export class AppModule {}
         1、全局注册：
         在main.ts中导入需要的模块如：ValidationPipe
         然后使用 app.useGlobalPipes(new ValidationPipe()) 即可
+        但是这种方式并不会注入依赖需要在app.module中写
+```javascript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+
+@Module({
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+  ],
+})
+export class AppModule {}
+```
         2、模块注册：
         在需要注册的controller控制器中导入ValidationPipe
         然后从@nestjs/common中导入UsePipes装饰器
@@ -162,6 +216,21 @@ export class AppModule {}
     1、全局注册：
         在main.ts中导入需要的模块如：HttpExceptionFilter
         然后使用 app.useGlobalFilters(new HttpExceptionFilter()) 即可
+        考虑依赖注入的放问，在app.module中加provider
+```javascript
+import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+
+@Module({
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
+})
+export class AppModule {}
+```
     2、模块注册：
         在需要注册的controller控制器中导入HttpExceptionFilter
         然后从@nestjs/common中导入UseFilters装饰器

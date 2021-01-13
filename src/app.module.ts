@@ -8,6 +8,13 @@ import { HotelsService } from './hotels/hotels.service';
 @Module({
   imports: [HotelsModule],
   controllers: [AppController, HotelsController],
-  providers: [AppService, HotelsService],
+  providers: [
+    AppService,
+    HotelsService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard
+    // }
+  ],
 })
 export class AppModule {}
