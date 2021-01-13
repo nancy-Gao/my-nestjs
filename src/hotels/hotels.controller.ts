@@ -1,7 +1,23 @@
-import { Controller, Header, Post, Redirect, Query, Req, Param, HostParam, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Header,
+  Post,
+  Redirect,
+  Query,
+  Req,
+  Param,
+  HostParam,
+  Get,
+  UseGuards,
+  ParseIntPipe,
+  UseFilters,
+  HttpException, UseInterceptors,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthpartGuard } from 'src/authpart.guard';
 import { HotelsService } from './hotels.service';
+import { HttppartexceptionFilter } from '../httppartexception.filter';
+import { ResponsepartInterceptor } from 'src/responsepart.interceptor';
 
 @Controller('hotels')
 export class HotelsController {
@@ -21,8 +37,12 @@ export class HotelsController {
 
   @Get(':id')
   @UseGuards(AuthpartGuard) // 局部注册guard
-  getName() {
+  // @UsePipes(...)
+  @UseFilters(HttppartexceptionFilter)
+  @UseInterceptors(ResponsepartInterceptor)
+  getName(@Param('id', ParseIntPipe) id:number) {
     console.log('get name');
+    // throw new HttpException({message: 'auto'}, 400);
     return this.hotelService.getHotelsName();
   }
 
