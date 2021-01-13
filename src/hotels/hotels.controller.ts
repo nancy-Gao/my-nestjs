@@ -18,6 +18,8 @@ import { AuthpartGuard } from 'src/authpart.guard';
 import { HotelsService } from './hotels.service';
 import { HttppartexceptionFilter } from '../httppartexception.filter';
 import { ResponsepartInterceptor } from 'src/responsepart.interceptor';
+import { Role } from 'src/role.decorator';
+import { RoleGuard } from '../role.guard';
 
 @Controller('hotels')
 export class HotelsController {
@@ -40,6 +42,8 @@ export class HotelsController {
   // @UsePipes(...)
   @UseFilters(HttppartexceptionFilter)
   @UseInterceptors(ResponsepartInterceptor)
+  @Role('role', 'admin')
+  @UseGuards(RoleGuard)
   getName(@Param('id', ParseIntPipe) id:number) {
     console.log('get name');
     // throw new HttpException({message: 'auto'}, 400);
